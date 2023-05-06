@@ -16,13 +16,11 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Task App',
-      debugShowCheckedModeBanner: false,
-      home: const HomePage(),
-      initialBinding: HomeBinding(),
-      builder: EasyLoading.init(),
-    );
-  }
+  Widget build(BuildContext context) => GetMaterialApp(
+        title: 'Task App',
+        debugShowCheckedModeBanner: false,
+        home: const HomePage(),
+        initialBinding: HomeBinding(),
+        builder: EasyLoading.init(),
+      );
 }

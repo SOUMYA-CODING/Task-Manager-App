@@ -8,49 +8,59 @@ import 'package:task_app/src/modules/home/controller.dart';
 import 'package:task_app/src/modules/home/widgets/add_card.dart';
 import 'package:task_app/src/modules/home/widgets/add_diaglog.dart';
 import 'package:task_app/src/modules/home/widgets/task_card.dart';
+import 'package:task_app/src/modules/report/view.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
-          child: ListView(
+        body: Obx(
+          () => IndexedStack(
+            index: controller.tabIndex.value,
             children: [
-              Padding(
-                padding: EdgeInsets.all(4.0.wp),
-                child: Text(
-                  'My List',
-                  style: TextStyle(
-                    fontSize: 24.0.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Obx(
-                () => GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const ClampingScrollPhysics(),
+              SafeArea(
+                child: ListView(
                   children: [
-                    ...controller.tasks
-                        .map((element) => LongPressDraggable(
-                            data: element,
-                            onDragStarted: () =>
-                                controller.changeDeleting(true),
-                            onDraggableCanceled: (_, __) =>
-                                controller.changeDeleting(false),
-                            onDragEnd: (_) => controller.changeDeleting(false),
-                            feedback: Opacity(
-                              opacity: 0.8,
-                              child: TaskCard(task: element),
-                            ),
-                            child: TaskCard(task: element)))
-                        .toList(),
-                    AddCard(),
+                    Padding(
+                      padding: EdgeInsets.all(4.0.wp),
+                      child: Text(
+                        'My List',
+                        style: TextStyle(
+                          fontSize: 24.0.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
+                        children: [
+                          ...controller.tasks
+                              .map((element) => LongPressDraggable(
+                                  data: element,
+                                  onDragStarted: () =>
+                                      controller.changeDeleting(true),
+                                  onDraggableCanceled: (_, __) =>
+                                      controller.changeDeleting(false),
+                                  onDragEnd: (_) =>
+                                      controller.changeDeleting(false),
+                                  feedback: Opacity(
+                                    opacity: 0.8,
+                                    child: TaskCard(task: element),
+                                  ),
+                                  child: TaskCard(task: element)))
+                              .toList(),
+                          AddCard(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
+              ReportPage(),
             ],
           ),
         ),
@@ -58,10 +68,16 @@ class HomePage extends GetView<HomeController> {
           builder: (_, __, ___) => Obx(
             () => FloatingActionButton(
               backgroundColor: controller.deleting.value ? Colors.red : blue,
-              onPressed: () => Get.to(
-                () => AddDialog(),
-                transition: Transition.downToUp,
-              ),
+              onPressed: () {
+                if (controller.tasks.isNotEmpty) {
+                  Get.to(
+                    () => AddDialog(),
+                    transition: Transition.downToUp,
+                  );
+                } else {
+                  EasyLoading.showInfo('Please create your task type');
+                }
+              },
               child: Icon(controller.deleting.value ? Icons.delete : Icons.add),
             ),
           ),
@@ -69,6 +85,37 @@ class HomePage extends GetView<HomeController> {
             controller.deleteTask(task);
             EasyLoading.showSuccess('Deleted');
           },
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: Theme(
+          data: ThemeData(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: Obx(
+            () => BottomNavigationBar(
+              onTap: (int index) => controller.changeTabIndex(index),
+              currentIndex: controller.tabIndex.value,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: [
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(right: 15.0.wp),
+                    child: const Icon(Icons.apps),
+                  ),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: EdgeInsets.only(left: 15.0.wp),
+                    child: const Icon(Icons.data_usage),
+                  ),
+                  label: 'Data Usages',
+                ),
+              ],
+            ),
+          ),
         ),
       );
 }
